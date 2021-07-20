@@ -109,14 +109,16 @@ services:
 
   airflow-init:
     <<: *airflow-common
-    command: version
+    command: connections import /opt/airflow/default_connection.json
     environment:
       <<: *airflow-common-env
       _AIRFLOW_DB_UPGRADE: 'true'
       _AIRFLOW_WWW_USER_CREATE: 'true'
       _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
       _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
-
+    volumes:
+      - ./airflow/default_connection.json:/opt/airflow/default_connection.json
+      
   flower:
     <<: *airflow-common
     command: celery flower
