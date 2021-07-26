@@ -53,6 +53,13 @@ minio-init: ## Create buckets to setup project
     	mb minio/lake-transient-challenge minio/lake-raw-challenge \
 		minio/lake-trusted-challenge minio/lake-refined-challenge
 
+minio-bash: ## Start docker minio/mc to manager minio server
+	@docker run -ti --rm \
+    	--env MC_HOST_minio=http://${MINIO_ACCESS_KEY}:${MINIO_SECRET_KEY}@minio:9000 \
+    	--network challenge-data-pipeline_default \
+		--entrypoint /bin/bash \
+    	minio/mc
+
 docker-dependencies: docker-postgres docker-redis docker-airflow-init docker-flower docker-minio ## Starts All docker dependencies
 
 docker-apps-recreate:
