@@ -35,7 +35,7 @@ class SaveTwitterInTransientZone:
             self.minio.load_string(
                 json.dumps(twitter_pg),
                 key=(
-                    f'twitters-{page}-'
+                    f'alura_twitters/twitters-{page}-'
                     f'{self.start_time.isoformat()}-'
                     f'{self.end_time.isoformat()}.json'
                 ),
