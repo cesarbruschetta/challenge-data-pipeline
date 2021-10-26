@@ -7,7 +7,7 @@
     "password": null,
     "schema": "https",
     "port": null,
-    "extra": "{\"Authorization\": \"Bearer <your_bearer_token>\"}"
+    "extra": "{\"Authorization\": \"Bearer <YOUR_BEARER_TOKEN>\"}"
   },
   "minio_default": {
     "conn_type": "s3",

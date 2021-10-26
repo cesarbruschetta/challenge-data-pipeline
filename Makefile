@@ -2,6 +2,12 @@ export PYTHONPATH = .
 export MYPYPATH = ./stubs
 export SOURCE_PATH = ./airflow
 
+export AIRFLOW_UID=1000
+export AIRFLOW_GID=0
+
+export _AIRFLOW_WWW_USER_USERNAME=admin
+export _AIRFLOW_WWW_USER_PASSWORD=admin
+
 # SET .env and override default envs
 ifneq (,$(wildcard ./.env))
     include .env
