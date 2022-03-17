@@ -1,6 +1,6 @@
 export PYTHONPATH = .
 export MYPYPATH = ./stubs
-export SOURCE_PATH = ./airflow
+export SOURCE_PATH = ./pipeline_twitter
 
 export AIRFLOW_UID=1000
 export AIRFLOW_GID=0
