@@ -1,26 +1,27 @@
 from datetime import datetime
 from typing import Any, Dict, Generator, Optional
 
-from airflow.providers.http.hooks.http import HttpHook
+import requests
+from requests import Response
 
 
 TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%S.00Z'
 
 
-class TwitterHook(HttpHook):  # type: ignore
+class TwitterHook:
     def __init__(
         self,
         query: str,
-        conn_id: Optional[str] = None,
+        token: str,
         start_time: Optional[datetime] = None,
         end_time: Optional[datetime] = None,
     ) -> None:
 
+        self.host = 'api.twitter.com'
         self.query = query
-        self.conn_id = conn_id or 'twitter_default'
+        self.token = token
         self.start_time = start_time
         self.end_time = end_time
-        super().__init__(method='GET', http_conn_id=self.conn_id)
 
     def create_url(self) -> str:
         query = self.query
@@ -36,7 +37,7 @@ class TwitterHook(HttpHook):  # type: ignore
         expansions = ('author_id',)
         user_fields = ('id', 'name', 'username', 'created_at')
         url = (
-            f'/2/tweets/search/recent?'
+            f'https://{self.host}/2/tweets/search/recent?'
             f'query={query}'
             f'&tweet.fields={",".join(tweet_fields)}'
             f'&expansions={",".join(expansions)}'
@@ -49,15 +50,23 @@ class TwitterHook(HttpHook):  # type: ignore
 
         return url
 
+    def request(self, url: str) -> Response:
+        resq = requests.get(
+            url, headers={'Authorization': f'Bearer {self.token}'}
+        )
+        resq.raise_for_status()
+        return resq
+
     def paginate(
         self, url: str, next_token: Optional[str] = None
     ) -> Generator[Dict[str, Any], None, None]:
+
         if next_token is None:
             full_url = url
         else:
             full_url = f'{url}&next_token={next_token}'
 
-        data = super().run(full_url).json()
+        data = self.request(full_url).json()
         yield data
 
         if 'next_token' in data.get('meta', {}):
