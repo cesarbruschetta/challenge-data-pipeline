@@ -1,0 +1,17 @@
+[run]
+source =
+    pipeline_twitter
+omit =
+    */.local/*
+    /usr/*
+    */test_*.py
+    *conftest.py
+    */.virtualenvs/*
+    *bin*
+    *migrations*
+    *apps.py
+    pipeline_twitter/__init__.py
+
+[report]
+show_missing = True
+skip_covered =  True
