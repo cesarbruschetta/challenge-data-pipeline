@@ -1,25 +1,16 @@
-import pytest
-
-from pipeline_twitter.hooks import s3_hook
+from pipeline_twitter.hooks.s3_hook import S3Hook
 
 
-@pytest.fixture
-def boto3_fake(mocker):
+def test_should_save_file_in_s3(mocker, boto3_s3_fake):
 
-    fake = mocker.patch.object(s3_hook, 'boto3')
-    return fake.session.Session.return_value.client.return_value
-
-
-def test_should_get_post_of_twitter(mocker, boto3_fake):
-
-    obj = s3_hook.S3Hook()
+    obj = S3Hook()
     obj.load_string(
         bucket_name='fake-bucket',
         key='fake-file',
         string_data='fake-content',
     )
 
-    boto3_fake.upload_fileobj.assert_called_with(
+    boto3_s3_fake.upload_fileobj.assert_called_with(
         mocker.ANY,
         'fake-bucket',
         'fake-file',
