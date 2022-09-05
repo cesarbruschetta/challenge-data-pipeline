@@ -1,0 +1,48 @@
+
+# Airflow executor
+# One of: LocalExecutor, LocalKubernetesExecutor, CeleryExecutor, KubernetesExecutor, CeleryKubernetesExecutor
+executor: "KubernetesExecutor"
+
+# If this is true and using LocalExecutor/KubernetesExecutor/CeleryKubernetesExecutor, the scheduler's
+# service account will have access to communicate with the api-server and launch pods.
+# If this is true and using CeleryExecutor/KubernetesExecutor/CeleryKubernetesExecutor, the workers
+# will be able to launch pods.
+allowPodLaunching: true
+
+# Environment variables for all airflow containers
+env: 
+- name: "TWITTER_BEARER_TOKEN"
+  value: ""
+- name: "MINIO_ENDPOINT"
+  value: "http://minio.minio.svc.cluster.local:9000"
+- name: "TWITTER_BEARER_TOKEN"
+  value: ""
+- name: "MINIO_ACCESS_KEY"
+  value: "service-user-challenge-data-pipeline"
+- name: "MINIO_SECRET_KEY"
+  value: "{{ .Values.userServiceSecretKey }}"
+
+# Secrets for all airflow containers
+secret: []
+# - envName: ""
+#   secretName: ""
+#   secretKey: ""  
+    
+# Flower settings
+flower:
+  enabled: false
+
+# StatsD settings
+statsd:
+  enabled: false
+
+# Git sync
+dags:
+  gitSync:
+    enabled: true
+
+    repo: https://github.com/cesarbruschetta/challenge-data-pipeline
+    branch: main
+    rev: HEAD
+    depth: 1
+    subPath: "dags"
