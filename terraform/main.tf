@@ -82,8 +82,7 @@ resource "helm_release" "minio" {
   name       = "minio"
   namespace  = "minio"
   create_namespace = true
-  devel = true
-
+  
   timeout = 600
 
   values = [
@@ -125,4 +124,3 @@ resource "null_resource" "airflow" {
       EOF
   }
 }
-
