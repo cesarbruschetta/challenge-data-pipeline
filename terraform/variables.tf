@@ -8,13 +8,14 @@ variable "minio_root_password" {
     type        = string
     description = "Password for the Min.io root user"
     sensitive = true
-    default = "11ddbaf3386a"
 }
 
 variable "minio_user_service_password" {
     type        = string
     sensitive = true
-    default = "82e56b5b54ea2df54bcebcc897bb9f78"
 }
 
-
+variable "TWITTER_BEARER_TOKEN" {
+    type        = string
+    sensitive = true
+}

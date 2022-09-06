@@ -119,6 +119,8 @@ resource "null_resource" "airflow" {
         upgrade --install \
         --namespace airflow --create-namespace \
         --debug --values ./manifests/airflow/values.yaml \
+        --set userServiceSecretKey=${var.minio_user_service_password} \
+        --set twitterBearerToken=${var.TWITTER_BEARER_TOKEN} \
         airflow apache-airflow/airflow
       EOF
   }
