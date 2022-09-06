@@ -2,6 +2,7 @@ export PYTHONPATH = .
 export MYPYPATH = ./stubs
 export SOURCE_PATH = ./pipeline_twitter
 
+export DOCKER_IMAGE_NAME = cesarbruschetta/challenget-data-pipeline:lastest
 
 # SET .env and override default envs
 ifneq (,$(wildcard ./.env))
@@ -67,3 +68,10 @@ checks: blank-line isort-save black-save flake8 mypy ## Runs security checks, fo
 
 blank-line:
 	@echo
+
+## docker
+docker-build: ## Builds the docker image
+	@docker build --platform linux/amd64 -t ${DOCKER_IMAGE_NAME} .
+
+docker-push: ## Pushes the docker image
+	@docker push ${DOCKER_IMAGE_NAME}
