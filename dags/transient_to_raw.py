@@ -26,7 +26,8 @@ with DAG(
         task_id='run_save_transient_raw',
         name='run_save_transient_raw',
         cmds=[
-            f'python /app/pipeline_twitter/etls/save_in_raw.py',
+            '/usr/bin/python3.9',
+            '/app/pipeline_twitter/etls/save_in_raw.py',
             '--start_time={{ yesterday_ds }}',
             '--end_time={{ ds }}',
         ],

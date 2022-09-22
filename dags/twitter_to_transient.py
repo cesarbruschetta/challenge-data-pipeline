@@ -22,7 +22,8 @@ with DAG(
         task_id='run_save_transient',
         name='run_save_transient',
         cmds=[
-            f'python /app/pipeline_twitter/etls/save_in_transient.py',
+            '/usr/bin/python3.9',
+            '/app/pipeline_twitter/etls/save_in_transient.py',
             '--start_time={{ yesterday_ds }}',
             '--end_time={{ ds }}',
         ],
