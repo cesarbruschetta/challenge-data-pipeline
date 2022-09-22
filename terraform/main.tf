@@ -69,10 +69,42 @@ resource "null_resource" "cert-manager" {
   }
 }
 
-resource "helm_release" "minio" {
+
+resource "helm_release" "nfs-server" {
 
   depends_on = [
     null_resource.cert-manager,
+  ]
+
+  repository = "https://charts.helm.sh/stable/"
+  chart      = "nfs-server-provisioner"
+  version    = "1.1.3"
+
+  name       = "nfs-serve"
+  namespace  = "nfs-serve"
+  create_namespace = true
+
+  timeout = 600
+
+  set {
+    name = "persistence.enabled"
+    value = true
+  }
+  set {
+    name = "persistence.storageClass"
+    value = "standard"
+  }
+  set {
+    name = "persistence.size"
+    value = "200Gi"
+  }
+
+}
+
+resource "helm_release" "minio" {
+
+  depends_on = [
+    helm_release.nfs-server,
   ]
   
   repository = "https://charts.min.io/"
