@@ -31,7 +31,12 @@ with DAG(
         namespace='airflow',
         image="cesarbruschetta/challenget-data-pipeline:lastest",
         is_delete_operator_pod=True,
-        env_vars={},
+        env_vars={
+            "TWITTER_BEARER_TOKEN": os.getenv("TWITTER_BEARER_TOKEN"),
+            "MINIO_ENDPOINT": os.getenv("MINIO_ENDPOINT"),
+            "MINIO_ACCESS_KEY": os.getenv("MINIO_ACCESS_KEY"),
+            "MINIO_SECRET_KEY": os.getenv("MINIO_SECRET_KEY"),
+        },
     )
     end = DummyOperator(task_id='end')
 

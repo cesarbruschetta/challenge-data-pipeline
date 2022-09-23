@@ -1,7 +1,6 @@
 from pathlib import Path
 
-from airflow.contrib.operators.spark_submit_operator import SparkSubmitOperator
-from airflow.models import DAG, Variable
+from airflow.models import DAG
 from airflow.operators.dummy import DummyOperator
 from airflow.utils.dates import days_ago
 
@@ -35,7 +34,11 @@ with DAG(
         namespace='airflow',
         image="cesarbruschetta/challenget-data-pipeline:lastest",
         is_delete_operator_pod=True,
-        env_vars={},
+        env_vars={
+            "MINIO_ENDPOINT": os.getenv("MINIO_ENDPOINT"),
+            "MINIO_ACCESS_KEY": os.getenv("MINIO_ACCESS_KEY"),
+            "MINIO_SECRET_KEY": os.getenv("MINIO_SECRET_KEY"),
+        },
     )
 
     end = DummyOperator(task_id='end')
