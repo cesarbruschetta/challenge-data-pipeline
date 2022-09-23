@@ -1,3 +1,5 @@
+import os
+
 from airflow.models import DAG
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.operators.dummy import DummyOperator

@@ -1,6 +1,7 @@
-from pathlib import Path
+import os
 
 from airflow.models import DAG
+from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.operators.dummy import DummyOperator
 from airflow.utils.dates import days_ago
 
@@ -10,7 +11,6 @@ ARGS = {
     'depends_on_past': False,
     'start_date': days_ago(6),
 }
-BASE_FOLDER = Path(__file__).parent
 
 with DAG(
     dag_id='transient_to_raw_v1',
@@ -27,8 +27,7 @@ with DAG(
         cmds=[
             '/usr/bin/python3.9',
             '/app/pipeline_twitter/etls/save_in_raw.py',
-            '--start_time={{ yesterday_ds }}',
-            '--end_time={{ ds }}',
+            '--process-date={{ ds }}',
         ],
         image_pull_policy="Always",
         namespace='airflow',
