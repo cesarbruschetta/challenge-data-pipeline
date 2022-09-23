@@ -15,6 +15,11 @@ variable "minio_user_service_password" {
     sensitive = true
 }
 
+variable "airflow_secret_key" {
+    type        = string
+    sensitive = true
+}
+
 variable "TWITTER_BEARER_TOKEN" {
     type        = string
     sensitive = true

@@ -18,7 +18,6 @@ users:
   ## Username, password and policy to be assigned to the user
   ## Default policies are [readonly|readwrite|writeonly|consoleAdmin|diagnostics]
   - accessKey: service-user-challenge-data-pipeline
-    secretKey: { .Values.userServiceSecretKey }
     policy: consoleAdmin
 
 ## List of buckets to be created after minio install

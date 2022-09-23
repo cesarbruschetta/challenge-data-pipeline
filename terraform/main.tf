@@ -132,7 +132,7 @@ resource "helm_release" "minio" {
   }
 
   set {
-    name = "userServiceSecretKey"
+    name = "users[0].secretKey"
     value = var.minio_user_service_password
   }
 
@@ -150,8 +150,11 @@ resource "null_resource" "airflow" {
         upgrade --install \
         --namespace airflow --create-namespace \
         --debug --values ./manifests/airflow/values.yaml \
-        --set userServiceSecretKey=${var.minio_user_service_password} \
-        --set twitterBearerToken=${var.TWITTER_BEARER_TOKEN} \
+        --set env[2].name=MINIO_SECRET_KEY \
+        --set env[2].value="${var.minio_user_service_password}" \
+        --set env[3].name=TWITTER_BEARER_TOKEN \
+        --set env[3].value="${var.TWITTER_BEARER_TOKEN}" \
+        --set webserverSecretKey="${var.airflow_secret_key}" \
         airflow apache-airflow/airflow
       EOF
   }
