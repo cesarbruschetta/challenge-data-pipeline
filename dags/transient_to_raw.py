@@ -1,4 +1,5 @@
 import os
+from datetime import date
 
 from airflow.models import DAG
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
@@ -9,7 +10,7 @@ from airflow.utils.dates import days_ago
 ARGS = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': days_ago(6),
+    'start_date': date.totay(),
 }
 
 with DAG(
@@ -25,7 +26,8 @@ with DAG(
         task_id='run_save_transient_raw',
         name='run_save_transient_raw',
         cmds=[
-            '/usr/bin/python3.9',
+            '/opt/spark/bin/spark-submit',
+            '--conf "spark.driver.extraJavaOptions=-Divy.cache.dir=/tmp -Divy.home=/tmp"',
             '/app/pipeline_twitter/etls/save_in_raw.py',
             '--process-date={{ ds }}',
         ],
