@@ -69,11 +69,23 @@ resource "null_resource" "cert-manager" {
   }
 }
 
+resource "null_resource" "metrics-server" {
+  depends_on = [
+    null_resource.ingress-nginx,
+  ]
+
+  provisioner "local-exec" {
+    command = <<EOF
+      kubectl --context="kind-${var.cluster_name}" \
+        apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+    EOF
+  }
+}
 
 resource "helm_release" "nfs-server" {
 
   depends_on = [
-    null_resource.cert-manager,
+    null_resource.metrics-server,
   ]
 
   repository = "https://charts.helm.sh/stable/"
@@ -123,7 +135,7 @@ resource "helm_release" "minio" {
   
   set {
     name  = "rootUser"
-    value = "admin"
+    value = "root"
   }
 
   set {
