@@ -1,6 +1,6 @@
-export PYTHONPATH = .
+export PYTHONPATH = ./src_pipeline/pipeline_twitter:
 export MYPYPATH = ./stubs
-export SOURCE_PATH = ./pipeline_twitter
+export SOURCE_PATH = ./src_pipeline/pipeline_twitter
 
 export DOCKER_IMAGE_NAME = cesarbruschetta/challenget-data-pipeline:lastest
 
