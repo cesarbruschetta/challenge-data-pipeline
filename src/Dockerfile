@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget "https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-core/${AWS_SDK_VERSION}/aws-java-sdk-core-${AWS_SDK_VERSION}.jar" -P /opt/spark/jars/ && \
     wget "https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-s3/${AWS_SDK_VERSION}/aws-java-sdk-s3-${AWS_SDK_VERSION}.jar" -P /opt/spark/jars/ && \
     wget "https://repo1.maven.org/maven2/com/google/guava/guava/31.1-jre/guava-31.1-jre.jar" -P /opt/spark/jars/ && \
+    wget "https://repo1.maven.org/maven2/org/apache/spark/spark-sql-kafka-0-10_2.12/${HADOOP_VERSION}/spark-sql-kafka-0-10_2.12-${HADOOP_VERSION}.jar" -P /opt/spark/jars/ && \
     # Remove duplicated class
     rm -f /hadoop/share/hadoop/common/lib/slf4j-log4j12-1.7.30.jar && \
     rm -f /opt/spark/jars/guava-14.0.1.jar && \
@@ -25,10 +26,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # copy the code
 ADD ./pipeline_twitter /app/pipeline_twitter
-ADD ./requirements.txt /app/requirements.txt
 
 # Install Python dependencies
-RUN python3 -m pip install -r /app/requirements.txt
+RUN python3 -m pip install poetry==1.2.1 && \
+    poetry export -o /app/requirements.txt && \
+    python3 -m pip install -r /app/requirements.txt
 
 # Set the working directory
 WORKDIR /app

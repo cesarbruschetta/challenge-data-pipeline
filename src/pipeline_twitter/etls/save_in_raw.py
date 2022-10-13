@@ -255,11 +255,7 @@ if __name__ == "__main__":
     parser.add_argument("--process-date", required=True)
     args = parser.parse_args()
 
-    spark = (
-        SparkSession.builder.master("local[*]")
-        .appName("save_transient_to_raw")
-        .getOrCreate()
-    )
+    spark = SparkSession.builder.appName("save_transient_to_raw").getOrCreate()
 
     obj = SaveTransientZoneToRawZone(
         spark=spark,
