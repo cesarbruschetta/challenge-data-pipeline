@@ -1,0 +1,8 @@
+provisioning:
+  topics:
+    - name: "twitter-insight-tweet-topic"
+      partitions: 1
+      replicationFactor: 1
+      config:
+        retention.ms: 604800000
+        segment.bytes: 1073741824

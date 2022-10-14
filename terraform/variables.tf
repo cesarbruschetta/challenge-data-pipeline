@@ -24,3 +24,13 @@ variable "TWITTER_BEARER_TOKEN" {
     type        = string
     sensitive = true
 }
+
+variable "mongodb_root_password" {
+    type        = string
+    sensitive = true
+}
+
+variable "mongodb_user_service_password" {
+    type        = string
+    sensitive = true
+}

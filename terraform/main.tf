@@ -171,3 +171,56 @@ resource "null_resource" "airflow" {
       EOF
   }
 }
+
+resource "helm_release" "kafka" {
+
+  depends_on = [
+    null_resource.airflow,
+  ]
+  
+  repository = "https://charts.bitnami.com/bitnami"
+  chart      = "kafka"
+  version    = "19.0.0"
+
+  name       = "kafka"
+  namespace  = "kafka"
+  create_namespace = true
+  
+  timeout = 600
+
+  values = [
+    "${file("./manifests/kafka/values.yaml")}"
+  ]
+}
+
+resource "helm_release" "mongoDB" {
+
+  depends_on = [
+    helm_release.kafka,
+  ]
+  
+  repository = "https://charts.bitnami.com/bitnami"
+  chart      = "mongodb"
+  version    = "13.1.7"
+
+  name       = "mongodb"
+  namespace  = "mongodb"
+  create_namespace = true
+  
+  timeout = 600
+
+  values = [
+    "${file("./manifests/mongodb/values.yaml")}"
+  ]
+
+  set {
+    name  = "auth.rootPassword"
+    value = var.mongodb_root_password
+  }
+
+  set {
+    name = "auth.password"
+    value = var.mongodb_user_service_password
+  }
+
+}

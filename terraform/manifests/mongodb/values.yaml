@@ -1,0 +1,8 @@
+auth:
+  username: service-user-challenge-data-pipeline
+  database: twitter-insight-tweet
+
+image:
+  registry: ghcr.io
+  repository: zcube/bitnami-compat/mongodb
+  tag: 6.0.2-debian-11-r30
