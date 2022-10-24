@@ -25,7 +25,7 @@ with DAG(
         task_id='run_save_transient_raw',
         name='run_save_transient_raw',
         cmds=[
-            '/opt/spark/bin/spark-submit',
+            '/usr/bin/python3.9',
             '/app/pipeline_twitter/etls/save_in_raw.py',
             '--process-date={{ ds }}',
         ],
