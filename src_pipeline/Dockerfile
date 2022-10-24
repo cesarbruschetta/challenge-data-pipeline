@@ -25,12 +25,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 # copy the code
-ADD ./pipeline_twitter /app/pipeline_twitter
+ADD . /app
+
+# Set the working directory
+WORKDIR /app
 
 # Install Python dependencies
 RUN python3 -m pip install poetry==1.2.1 && \
     poetry export -o /app/requirements.txt && \
     python3 -m pip install -r /app/requirements.txt
-
-# Set the working directory
-WORKDIR /app

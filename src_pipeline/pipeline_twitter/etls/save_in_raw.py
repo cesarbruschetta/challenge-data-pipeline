@@ -1,11 +1,13 @@
 import argparse
 import os
+import logging
 from datetime import datetime
 
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as f
 from pyspark.sql.types import StructType
 
+logger = logging.getLogger(__name__)
 
 SCHEMA_DATA = {
     "fields": [
@@ -203,6 +205,7 @@ class SaveTransientZoneToRawZone:
                 "org.apache.hadoop.fs.s3a.S3AFileSystem"
             ),
             "spark.hadoop.fs.s3a.path.style.access": "true",
+            "fs.s3a.connection.ssl.enabled": "false",
             "fs.s3a.multipart.size": "104857600",
         }
 
@@ -237,6 +240,7 @@ class SaveTransientZoneToRawZone:
         )
 
     def run(self) -> None:
+        logger.info("Starting read data from transient zone")
         data_df = self.spark.readStream.json(
             SOURCE,
             schema=StructType.fromJson(SCHEMA_DATA),
@@ -246,8 +250,11 @@ class SaveTransientZoneToRawZone:
         tweet_df = self.get_tweets_data(data_df)
         user_df = self.get_users_data(data_df)
 
+        logger.info("Starting export data to raw zone")
         self.export_json(tweet_df, "tweet")
         self.export_json(user_df, "user")
+
+        logger.info("Finished export data to raw zone")
 
 
 if __name__ == "__main__":
