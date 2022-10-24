@@ -33,13 +33,14 @@ resource "null_resource" "k8s" {
             echo "Creating k8s cluster"
             kind create cluster \
               --name ${self.triggers.name} \
-              --config ./manifests/kind_cluster/config.yaml
+              --config ./manifests/kind_cluster/config.yaml \
+              --verbosity 2
         EOF
   }
 
   provisioner "local-exec" {
     when    = destroy
-    command = "kind delete clusters ${self.triggers.name}"
+    command = "kind delete clusters ${self.triggers.name} --verbosity 2"
   }
 }
 
