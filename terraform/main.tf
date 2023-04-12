@@ -30,55 +30,40 @@ resource "null_resource" "k8s" {
 
   provisioner "local-exec" {
     command = <<EOF
-            echo "Creating k8s cluster"
-            kind create cluster \
-              --name ${self.triggers.name} \
-              --config ./manifests/kind_cluster/config.yaml \
-              --verbosity 2
-        EOF
+        echo "Creating kind registry" && \
+        docker run \
+          -d --restart=always -p "127.0.0.1:5001:5000" --name "kind-registry" \
+          registry:2 && \
+        echo "Creating k8s cluster" && \
+        kind create cluster \
+          --name ${self.triggers.name} \
+          --config ./manifests/kind_cluster/config.yaml \
+          --verbosity 2
+        echo "Connect the registry to the cluster network if not already connected" && \
+        docker network connect "kind" "kind-registry"
+    EOF
   }
 
   provisioner "local-exec" {
     when    = destroy
-    command = "kind delete clusters ${self.triggers.name} --verbosity 2"
-  }
-}
-
-resource "null_resource" "ingress-nginx" {
-  depends_on = [null_resource.k8s]
-
-  provisioner "local-exec" {
     command = <<EOF
-      kubectl --context="kind-${var.cluster_name}" \
-        apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+        echo "Deleting kind registry" && \
+        docker rm -f kind-registry && \
+        echo "Deleting k8s cluster" && \
+        kind delete clusters ${self.triggers.name} --verbosity 2
     EOF
   }
 }
 
-resource "null_resource" "cert-manager" {
+resource "null_resource" "k8s-apply" {
   depends_on = [
-    null_resource.ingress-nginx,
+    null_resource.k8s,
   ]
 
   provisioner "local-exec" {
     command = <<EOF
       kubectl --context="kind-${var.cluster_name}" \
-        apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.7.3/cert-manager.crds.yaml && \
-      kubectl --context="kind-${var.cluster_name}" \
-        apply -f https://gist.githubusercontent.com/t83714/51440e2ed212991655959f45d8d037cc/raw/7b16949f95e2dd61e522e247749d77bc697fd63c/selfsigned-issuer.yaml
-    EOF
-  }
-}
-
-resource "null_resource" "metrics-server" {
-  depends_on = [
-    null_resource.ingress-nginx,
-  ]
-
-  provisioner "local-exec" {
-    command = <<EOF
-      kubectl --context="kind-${var.cluster_name}" \
-        apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+        apply -f ./manifests/k8s/
     EOF
   }
 }
@@ -86,7 +71,7 @@ resource "null_resource" "metrics-server" {
 resource "helm_release" "nfs-server" {
 
   depends_on = [
-    null_resource.metrics-server,
+    null_resource.k8s-apply,
   ]
 
   repository = "https://charts.helm.sh/stable/"
@@ -133,11 +118,6 @@ resource "helm_release" "minio" {
   values = [
     "${file("./manifests/minio/values.yaml")}"
   ]
-  
-  set {
-    name  = "rootUser"
-    value = "root"
-  }
 
   set {
     name  = "rootPassword"
@@ -151,32 +131,70 @@ resource "helm_release" "minio" {
 
 }
 
-resource "null_resource" "airflow" {
-
+resource "null_resource" "build-airflow-image" {
   depends_on = [
     helm_release.minio,
   ]
-  
+
   provisioner "local-exec" {
     command = <<EOF
-      helm --kube-context="kind-${var.cluster_name}" \
-        upgrade --install \
-        --namespace airflow --create-namespace \
-        --debug --values ./manifests/airflow/values.yaml \
-        --set env[2].name=MINIO_SECRET_KEY \
-        --set env[2].value="${var.minio_user_service_password}" \
-        --set env[3].name=TWITTER_BEARER_TOKEN \
-        --set env[3].value="${var.TWITTER_BEARER_TOKEN}" \
-        --set webserverSecretKey="${var.airflow_secret_key}" \
-        airflow apache-airflow/airflow
-      EOF
+        docker build \
+        --tag localhost:5001/custom-local-airflow:latest \
+        ./manifests/airflow/docker && \
+        docker push localhost:5001/custom-local-airflow:latest
+    EOF
+  }
+}
+
+resource "helm_release" "airflow" {
+  depends_on = [
+    null_resource.build-airflow-image,
+  ]
+
+  repository = "https://airflow.apache.org"
+  chart      = "airflow"
+  version    = "1.8.0"
+
+  name             = "airflow"
+  namespace        = "airflow"
+  create_namespace = true
+
+  timeout = 600
+
+  values = [
+    "${file("./manifests/airflow/values.yaml")}"
+  ]
+
+  set {
+    name  = "webserverSecretKey"
+    value = var.airflow_secret_key
+  }
+
+  set {
+    name  = "env[2].name"
+    value = "MINIO_SECRET_KEY"
+  }
+
+  set {
+    name  = "env[2].value"
+    value = var.minio_user_service_password
+  }
+
+  set {
+    name  = "env[3].name"
+    value = "TWITTER_BEARER_TOKEN"
+  }
+
+  set {
+    name  = "env[3].value"
+    value = var.TWITTER_BEARER_TOKEN
   }
 }
 
 resource "helm_release" "kafka" {
 
   depends_on = [
-    null_resource.airflow,
+    helm_release.airflow,
   ]
   
   repository = "https://charts.bitnami.com/bitnami"
