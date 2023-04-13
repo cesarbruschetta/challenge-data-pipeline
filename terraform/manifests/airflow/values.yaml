@@ -3,6 +3,7 @@ images:
   airflow:
     repository: localhost:5001/custom-local-airflow
     tag: latest
+    pullPolicy: Always
 
 # Airflow executor
 # One of: LocalExecutor, LocalKubernetesExecutor, CeleryExecutor, KubernetesExecutor, CeleryKubernetesExecutor

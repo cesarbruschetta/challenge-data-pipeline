@@ -139,6 +139,7 @@ resource "null_resource" "build-airflow-image" {
   provisioner "local-exec" {
     command = <<EOF
         docker build \
+        --platform=linux/arm64 \
         --tag localhost:5001/custom-local-airflow:latest \
         ./manifests/airflow/docker && \
         docker push localhost:5001/custom-local-airflow:latest
@@ -153,11 +154,12 @@ resource "helm_release" "airflow" {
 
   repository = "https://airflow.apache.org"
   chart      = "airflow"
-  version    = "1.8.0"
+  version    = "1.7.0"
 
   name             = "airflow"
   namespace        = "airflow"
   create_namespace = true
+  wait             = false
 
   timeout = 600
 
