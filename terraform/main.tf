@@ -6,6 +6,10 @@ terraform {
       source  = "hashicorp/helm"
       version = ">= 2.6.0"
     }
+    kubectl = {
+      source  = "gavinbunney/kubectl"
+      version = "1.14.0"
+    }
   }
 
   backend "local" {
@@ -18,60 +22,30 @@ terraform {
 provider "helm" {
   kubernetes {
     config_path    = "~/.kube/config"
-    config_context = "kind-${var.cluster_name}"
+    config_context = "${var.cluster_name}"
   }
 }
 
-resource "null_resource" "k8s" {
-
-  triggers = {
-    name = var.cluster_name
-  }
-
-  provisioner "local-exec" {
-    command = <<EOF
-        echo "Creating kind registry" && \
-        docker run \
-          -d --restart=always -p "127.0.0.1:5001:5000" --name "kind-registry" \
-          registry:2 && \
-        echo "Creating k8s cluster" && \
-        kind create cluster \
-          --name ${self.triggers.name} \
-          --config ./manifests/kind_cluster/config.yaml \
-          --verbosity 2
-        echo "Connect the registry to the cluster network if not already connected" && \
-        docker network connect "kind" "kind-registry"
-    EOF
-  }
-
-  provisioner "local-exec" {
-    when    = destroy
-    command = <<EOF
-        echo "Deleting kind registry" && \
-        docker rm -f kind-registry && \
-        echo "Deleting k8s cluster" && \
-        kind delete clusters ${self.triggers.name} --verbosity 2
-    EOF
-  }
+provider "kubectl" {
+  config_path    = "~/.kube/config"
+  config_context = "${var.cluster_name}"
 }
 
-resource "null_resource" "k8s-apply" {
-  depends_on = [
-    null_resource.k8s,
-  ]
+data "kubectl_filename_list" "manifests" {
+    pattern = "./manifests/k8s/*.yaml"
+}
 
-  provisioner "local-exec" {
-    command = <<EOF
-      kubectl --context="kind-${var.cluster_name}" \
-        apply -f ./manifests/k8s/
-    EOF
-  }
+resource "kubectl_manifest" "k8s-apply" {
+  count = length(data.kubectl_filename_list.manifests.matches)
+  yaml_body = file(
+    element(data.kubectl_filename_list.manifests.matches, count.index)
+  )
 }
 
 resource "helm_release" "nfs-server" {
 
   depends_on = [
-    null_resource.k8s-apply,
+    kubectl_manifest.k8s-apply,
   ]
 
   repository = "https://charts.helm.sh/stable/"
@@ -90,7 +64,7 @@ resource "helm_release" "nfs-server" {
   }
   set {
     name = "persistence.storageClass"
-    value = "standard"
+    value = "${var.nfs-server-storageClass}"
   }
   set {
     name = "persistence.size"
@@ -140,9 +114,9 @@ resource "null_resource" "build-airflow-image" {
     command = <<EOF
         docker build \
         --platform=linux/arm64 \
-        --tag localhost:5001/custom-local-airflow:latest \
+        --tag localhost:${var.registry_port}/custom-local-airflow:latest \
         ./manifests/airflow/docker && \
-        docker push localhost:5001/custom-local-airflow:latest
+        docker push localhost:${var.registry_port}/custom-local-airflow:latest
     EOF
   }
 }
