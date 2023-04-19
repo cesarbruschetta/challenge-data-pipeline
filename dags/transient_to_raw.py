@@ -27,7 +27,6 @@ with DAG(
         cmds=[
             '/usr/bin/python3.9',
             '/app/submit/main.py',
-            '--process-date={{ ds }}',
         ],
         image_pull_policy="Always",
         namespace='airflow',

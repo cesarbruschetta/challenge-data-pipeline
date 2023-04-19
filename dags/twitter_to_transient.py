@@ -31,7 +31,7 @@ with DAG(
         ],
         image_pull_policy="Always",
         namespace='airflow',
-        image="cesarbruschetta/challenget-data-pipeline:lastest",
+        image="localhost:5001/challenget-data-pipeline:lastest",
         is_delete_operator_pod=True,
         env_vars={
             "TWITTER_BEARER_TOKEN": os.getenv("TWITTER_BEARER_TOKEN"),
