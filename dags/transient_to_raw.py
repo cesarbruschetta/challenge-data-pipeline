@@ -1,7 +1,7 @@
 import os
 
 from airflow.models import DAG
-from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator 
+from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.operators.dummy import DummyOperator
 from airflow.utils.dates import days_ago
 
@@ -21,20 +21,24 @@ with DAG(
 
     start = DummyOperator(task_id='start')
 
-    save_transient_raw = SparkSubmitOperator(
-		application='/app/pipeline_twitter/etls/save_in_raw.py',
-		conn_id='spark_default', 
-		task_id='run_save_transient_raw',
-        conf={
-            "spark.kubernetes.container.image":"cesarbruschetta/challenget-data-pipeline:lastest",
-            "spark.kubernetes.namespace":"spark-runner",
-            "spark.kubernetes.authenticate.driver.serviceAccountName":"spark-runner-service-account",
-            "spark.kubernetes.file.upload.path":"/tmp",
-            "spark.ui.enabled":"false",
-            "spark.kubernetes.driverEnv.MINIO_ENDPOINT": os.getenv("MINIO_ENDPOINT"),
-            "spark.kubernetes.driverEnv.MINIO_ACCESS_KEY": os.getenv("MINIO_ACCESS_KEY"),
-            "spark.kubernetes.driverEnv.MINIO_SECRET_KEY": os.getenv("MINIO_SECRET_KEY"),
-        }
+    save_transient_raw = KubernetesPodOperator(
+        task_id='run_save_transient_raw',
+        name='run_save_transient_raw',
+        cmds=[
+            '/usr/bin/python3.9',
+            '/app/submit/main.py',
+            '--process-date={{ ds }}',
+        ],
+        image_pull_policy="Always",
+        namespace='airflow',
+        image="localhost:5001/spark-submit:lastest",
+        is_delete_operator_pod=True,
+        env_vars={
+            "AIRFLOW_PROCESS_DATE": '{{ ds }}',
+            "MINIO_ENDPOINT": os.getenv("MINIO_ENDPOINT"),
+            "MINIO_ACCESS_KEY": os.getenv("MINIO_ACCESS_KEY"),
+            "MINIO_SECRET_KEY": os.getenv("MINIO_SECRET_KEY"),
+        },
     )
 
     end = DummyOperator(task_id='end')
