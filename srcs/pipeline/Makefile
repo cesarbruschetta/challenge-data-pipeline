@@ -2,7 +2,7 @@ export PYTHONPATH = ./pipeline/pipeline_twitter:
 export MYPYPATH = ./stubs
 export SOURCE_PATH = ./pipeline/pipeline_twitter
 
-export DOCKER_IMAGE_NAME = challenget-data-pipeline:lastest
+export DOCKER_IMAGE_NAME = localhost:5001/challenget-data-pipeline:lastest
 
 # SET .env and override default envs
 ifneq (,$(wildcard ./.env))
