@@ -64,7 +64,7 @@ resource "helm_release" "nfs-server" {
   }
   set {
     name = "persistence.storageClass"
-    value = "${var.nfs-server-storageClass}"
+    value = "${var.nfs_server_storageClass}"
   }
   set {
     name = "persistence.size"
@@ -105,25 +105,24 @@ resource "helm_release" "minio" {
 
 }
 
-resource "null_resource" "build-airflow-image" {
+resource "null_resource" "build-image" {
   depends_on = [
     helm_release.minio,
   ]
 
   provisioner "local-exec" {
     command = <<EOF
-        docker build \
-        --platform=linux/arm64 \
-        --tag localhost:${var.registry_port}/custom-local-airflow:latest \
-        ./manifests/airflow/docker && \
-        docker push localhost:${var.registry_port}/custom-local-airflow:latest
+        echo "Building image of Pipeline" && \
+        make -C ../srcs/pipeline/ docker-build docker-push && \
+        echo "Building image of Spark-submit" && \
+        make -C ../srcs/spark-submit/ docker-build docker-push
     EOF
   }
 }
 
 resource "helm_release" "airflow" {
   depends_on = [
-    null_resource.build-airflow-image,
+    null_resource.build-image,
   ]
 
   repository = "https://airflow.apache.org"

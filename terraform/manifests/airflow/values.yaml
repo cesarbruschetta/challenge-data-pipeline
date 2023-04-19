@@ -1,9 +1,3 @@
-# Images
-images:
-  airflow:
-    repository: localhost:5001/custom-local-airflow
-    tag: latest
-    pullPolicy: Always
 
 # Airflow executor
 # One of: LocalExecutor, LocalKubernetesExecutor, CeleryExecutor, KubernetesExecutor, CeleryKubernetesExecutor
@@ -23,8 +17,6 @@ env:
   value: "service-user-challenge-data-pipeline"
 - name: "KAFKA_BOOTSTRAP_SERVERS"
   value: "kafka.kafka.svc.cluster.local:9092"
-- name: "AIRFLOW_CONN_SPARK_DEFAULT"
-  value: "spark://k8s://https://127.0.0.1:6443"
 
 # Secrets for all airflow containers
 secret: []
