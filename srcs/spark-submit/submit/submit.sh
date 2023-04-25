@@ -11,8 +11,11 @@ $SPARK_HOME/bin/spark-submit \
   --master=k8s://https://kubernetes.default.svc \
   --deploy-mode=cluster \
   --name=$APP_NAME \
-  --driver-java-options="-Dlog4j.configuration=file:conf/log4j.properties" \
+  --files "./log4j.properties" \
   --conf spark.ui.enabled=true \
+  --conf spark.driver.extraJavaOptions="-Dlog4j.debug=true -Dlog4j.configuration=log4j.properties" \
+  --conf spark.executor.extraJavaOptions="-Dlog4j.debug=true -Dlog4j.configuration=log4j.properties" \
+  --conf spark.jars.ivy=/tmp/.ivy \
   --conf spark.executor.instances=3 \
   --conf spark.kubernetes.file.upload.path=/tmp \
   --conf spark.kubernetes.namespace=$NAMESPACE \
