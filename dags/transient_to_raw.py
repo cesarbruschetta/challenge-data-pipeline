@@ -30,7 +30,7 @@ with DAG(
         ],
         image_pull_policy="Always",
         namespace='airflow',
-        image="kind-registry:5000/spark-submit:lastest",
+        image="localhost:5001/spark-submit:lastest",
         is_delete_operator_pod=True,
         env_vars={
             "AIRFLOW_PROCESS_DATE": '{{ ds }}',

@@ -47,14 +47,14 @@ start-kind-cluster: ## Start the kind cluster
 		--name ${KUBE_CONTEXT} \
 		--config ./terraform/manifests/kind_cluster/config.yaml \
 		--verbosity 2
-	echo "Connect the registry to the cluster network if not already connected" && \
+	echo "Connect the registry to the cluster network" && \
 	docker network connect "kind" "kind-registry"
 
 stop-kind-cluster: ## Stop the kind cluster
 	@echo "Deleting kind registry" && \
 	docker rm -f kind-registry && \
 	echo "Deleting k8s cluster" && \
-	kind delete clusters --name ${KUBE_CONTEXT} --verbosity 2
+	kind delete clusters ${KUBE_CONTEXT} --verbosity 2
 
 tf_init: ## Terraform init backend
 	@${TERRAFORM} init
