@@ -1,5 +1,6 @@
 
 replicas: 2
+rootUser: root
 
 ## Configure resource requests and limits
 ## ref: http://kubernetes.io/docs/user-guide/compute-resources/

@@ -4,6 +4,18 @@ variable "cluster_name" {
     default     = "challenge-data-pipeline"
 }
 
+variable "registry_port" {
+    type        = string
+    description = "Port of the registry"
+    default     = "5001"
+}
+
+variable "nfs_server_storageClass" {
+    type        = string
+    description = "default storage class for the nfs server"
+    default     = "standard"
+}
+
 variable "minio_root_password" {
     type        = string
     description = "Password for the Min.io root user"

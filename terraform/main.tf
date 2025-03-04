@@ -10,6 +10,10 @@ terraform {
       source  = "scott-the-programmer/minikube"
       version = ">= 0.2.4"
     }
+    kubectl = {
+      source  = "gavinbunney/kubectl"
+      version = "1.14.0"
+    }
   }
 
   backend "local" {
